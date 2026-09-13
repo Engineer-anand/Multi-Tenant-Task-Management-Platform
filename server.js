@@ -44,15 +44,22 @@ app.use("*", (req, res) => {
   res.status(404).json({ message: "Route not found" })
 })
 
-// DB connection (only once, on cold start)
+// DB connection
+const mongoURI = process.env.MONGODB_URI || "mongodb://localhost:27017/task-platform";
+
 mongoose
-  .connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(mongoURI)
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => {
-    console.error("MongoDB error:", err)
-  })
+    console.error("MongoDB error:", err);
+  });
 
-module.exports = app
+// Start server when run directly (local development and Docker)
+const PORT = process.env.PORT || 5000;
+if (process.env.NODE_ENV !== "test" && require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+module.exports = app;
